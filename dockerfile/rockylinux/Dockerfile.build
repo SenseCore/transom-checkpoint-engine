@@ -1,0 +1,28 @@
+FROM registry.cn-hangzhou.aliyuncs.com/sensecore-transom/library/rockylinux:8.6
+
+RUN dnf -y update \
+    && dnf install -y gcc gcc-c++ git cmake mysql-devel make epel-release \
+    && dnf --enablerepo=powertools install -y openssl-devel gflags-devel protobuf-devel protobuf-compiler leveldb-devel \
+    && dnf --enablerepo=powertools install -y python3 libnl3-devel libudev-devel valgrind-devel pandoc python3-Cython python3-docutils python3-devel \
+    && dnf clean all
+
+# build and install spdlog
+RUN git clone https://github.com/gabime/spdlog.git -b v1.12.0 \
+    && cd spdlog && mkdir build && cd build \
+    && cmake .. && make -j && make install \
+    && cd ../../ && rm -rf spdlog
+
+# build install brpc
+RUN git clone https://github.com/apache/brpc.git && cd brpc \
+    && sh config_brpc.sh --headers=/usr/include --libs=/usr/lib64 \
+    && make -j \
+    && cp -r output/include/* /usr/include \
+    && cp -r output/lib/* /usr/lib64 \
+    && cd .. && rm -rf brpc
+
+# build rdma userspace library
+RUN git clone https://github.com/linux-rdma/rdma-core.git \
+    && cd rdma-core && cmake . && make -j && make install \
+    && cd .. && rm -rf rdma-core
+
+# docker build -t registry.cn-hangzhou.aliyuncs.com/sensecore-transom/tce-build:1.0-rockylinux . -f dockerfile/rockylinux/Dockerfile.build

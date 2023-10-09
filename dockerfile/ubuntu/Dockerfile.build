@@ -1,0 +1,29 @@
+FROM ubuntu:22.04
+
+RUN apt update \
+    && apt install -y libmysqlclient-dev build-essential git cmake g++ gcc make libssl-dev libgflags-dev \
+        libleveldb-dev libsnappy-dev \
+        libprotobuf-dev libprotoc-dev protobuf-compiler \
+        libudev-dev libnl-3-dev libnl-route-3-dev ninja-build pkg-config valgrind python3-dev cython3 python3-docutils pandoc \
+    && apt-get clean
+
+# build and install spdlog
+RUN git clone https://github.com/gabime/spdlog.git -b v1.12.0 \
+    && cd spdlog && mkdir build && cd build \
+    && cmake .. && make -j && make install \
+    && cd ../../ && rm -rf spdlog
+
+# build install brpc
+RUN git clone https://github.com/apache/brpc.git && cd brpc \
+    && sh config_brpc.sh --headers=/usr/include --libs=/usr/lib \
+    && make -j \
+    && cp -r output/include/* /usr/include \
+    && cp -r output/lib/* /usr/lib64 \
+    && cd .. && rm -rf brpc
+
+# build rdma userspace library
+RUN git clone https://github.com/linux-rdma/rdma-core.git \
+    && cd rdma-core && cmake . && make -j && make install \
+    && cd .. && rm -rf rdma-core
+
+# docker build -t registry.cn-hangzhou.aliyuncs.com/sensecore-transom/tce-build:1.0-ubuntu . -f dockerfile/ubuntu/Dockerfile.build

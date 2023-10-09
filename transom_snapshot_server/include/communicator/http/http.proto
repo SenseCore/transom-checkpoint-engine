@@ -1,0 +1,60 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+syntax="proto2";
+
+package communicators;
+option go_package = "./pb";
+option cc_generic_services = true;
+
+message HttpRequest {
+  optional string filename = 1;
+  optional int32 noderank = 20;
+  optional string iteration = 2;
+  optional int32 checkpointstate = 3;
+  optional uint64 size = 4;
+};
+
+message HttpResponse {
+  required string status = 5;
+  required int32 checkpointstate = 6;
+  required string message = 7;
+  optional int32 pid = 22;
+  optional int32 memfd = 23;
+};
+
+message CLIDataEntry {
+  required string filename = 21;
+  required uint64 address = 17;
+  optional int32 pid = 24;
+  optional int32 memfd = 25;
+};
+
+message CLIResponse {
+  required string status = 8;
+  repeated HttpRequest metadata = 9;
+  repeated CLIDataEntry cli_dict = 10;
+  repeated CLIDataEntry cli_backup_dict = 19;
+};
+
+service HttpService {
+  rpc createMetadata(HttpRequest) returns (HttpResponse);
+  rpc updateMetadata(HttpRequest) returns (HttpResponse);
+  rpc getMetadata(HttpRequest) returns (HttpResponse);
+  rpc getAllMetadata(HttpRequest) returns (CLIResponse);
+  rpc getAllStorage(HttpRequest) returns (CLIResponse);
+};

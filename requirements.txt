@@ -1,0 +1,5 @@
+loguru
+torch
+torchvision
+deepspeed
+requests

@@ -1,0 +1,49 @@
+variables:
+  REGISTRY: registry.sensetime.com/sensecore-lepton
+  VERSION: 0.0.1
+  PROJECT: checkpoint-engine
+  # dind config
+  DOCKER_HOST: tcp://localhost:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  CI_IMAGE: registry.sensetime.com/lepton/lepton-ci:1.20.5
+
+# each job's `before_script` will overwrite this global settings.
+# so, we'd better config only ONE global `before_script` here.
+before_script:
+  # set image name
+  - export PROJECT_IMAGE="${REGISTRY}/${PROJECT}:${VERSION}-${CI_COMMIT_SHORT_SHA}"
+  - export PROJECT_IMAGE_RELEASE="${REGISTRY}/${PROJECT}:${VERSION}"
+  # for caching go dependency packages
+  - mkdir -p .go
+  - export GOPATH="$CI_PROJECT_DIR/.go"
+  - export GOPRIVATE="$GOPRIVATE,gitlab.bj.sensetime.com"
+  - export PATH="$PATH:${GOPATH}/bin"
+  # set file server config
+  - export H5AI_HOST=phoenix@10.5.9.145
+  - export OPENSSH_OPTIONS=(-o LogLevel=error -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
+  - echo -e "machine gitlab.bj.sensetime.com login gitlab-ci-token password ${CI_JOB_TOKEN}" > ~/.netrc
+
+stages:
+  - code-scan
+
+.go-cache:
+  cache:
+    paths:
+      - .go/pkg/mod/
+
+code-scan:
+  stage: code-scan
+  image: registry.sensetime.com/security/codescan:latest
+  tags:
+    - k8s
+  only:
+    - master
+    - develop
+    - /^release.*$/
+  when: manual
+  allow_failure: true
+  script:
+    - rm -rf tests
+    - sonar_full_scan.sh
