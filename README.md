@@ -4,9 +4,9 @@
 
 **Checkpoint** in pytorch has two different meaning, one is general checkpoint, the other is [TORCH.UTILS.CHECKPOINT](https://pytorch.org/docs/stable/checkpoint.html). This project proposes a light-weighted general checkpoint acceleration system that improves checkpointing efficiency.
 
-The background and motivation of this system is depicted in detail at [BACKGROUND](docs/background.md). Just declare the conclusion here: In large-scale LLM training, our system improves training efficiency by around **~X%**.
+The background and motivation of this system is depicted in detail at [BACKGROUND](docs/background.md). Just declare the conclusion here: In large-scale LLM training, our system improves training efficiency by around **~28%**.
 
-If you're academically interested in transom or checkpoint subsystem, please refer to our paper: [TBD](TBD).
+If you're academically interested in transom or checkpoint subsystem, please refer to our paper: [TRANSOM: An Efficient Fault-Tolerant System for Training LLMs](https://arxiv.org/abs/2310.10046). For anyone using this project for research purpose, please cite our paper as well.
 
 ## architecture & workflow
 
